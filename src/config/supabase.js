@@ -12,17 +12,17 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-// Only throw error in development, allow build to complete
+// Use placeholder values during build to prevent errors
+const url = supabaseUrl || 'https://placeholder.supabase.co'
+const key = supabaseAnonKey || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0'
+
+export const supabase = createClient(url, key)
+
+// Log warning in development if env vars are missing
 if (import.meta.env.DEV && (!supabaseUrl || !supabaseAnonKey)) {
-  console.warn('Missing Supabase environment variables. Please check your .env file.')
+  console.warn('⚠️ Missing Supabase environment variables. Please check your .env file.')
 }
-
-// Create client with fallback empty strings for build time
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
-)
 
