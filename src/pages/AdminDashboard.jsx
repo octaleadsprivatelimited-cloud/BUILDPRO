@@ -204,18 +204,50 @@ export default function AdminDashboard() {
 
   const handleProjectSubmit = async (e) => {
     e.preventDefault()
-    try {
-      if (editingProject) {
-        const { error } = await supabase
-          .from('projects')
-          .update(projectForm)
-          .eq('id', editingProject.id)
+    
+    // Validate required fields
+    if (!projectForm.title || !projectForm.location || !projectForm.type) {
+      showNotification('error', 'Please fill in all required fields (Title, Location, Type)')
+      return
+    }
 
-        if (error) throw error
+    try {
+      // Prepare data - convert empty strings to null for optional fields
+      const projectData = {
+        title: projectForm.title.trim(),
+        location: projectForm.location.trim(),
+        type: projectForm.type,
+        description: projectForm.description?.trim() || null,
+        completion_year: projectForm.completion_year 
+          ? parseInt(projectForm.completion_year) 
+          : null,
+        image_url: projectForm.image_url?.trim() || null,
+      }
+
+      if (editingProject) {
+        const { data, error } = await supabase
+          .from('projects')
+          .update(projectData)
+          .eq('id', editingProject.id)
+          .select()
+
+        if (error) {
+          console.error('Update error:', error)
+          showNotification('error', `Failed to update project: ${error.message || error.details || 'Unknown error'}`)
+          return
+        }
         showNotification('success', 'Project updated successfully')
       } else {
-        const { error } = await supabase.from('projects').insert([projectForm])
-        if (error) throw error
+        const { data, error } = await supabase
+          .from('projects')
+          .insert([projectData])
+          .select()
+
+        if (error) {
+          console.error('Insert error:', error)
+          showNotification('error', `Failed to create project: ${error.message || error.details || 'Unknown error'}`)
+          return
+        }
         showNotification('success', 'Project created successfully')
       }
 
@@ -232,24 +264,52 @@ export default function AdminDashboard() {
       fetchData()
     } catch (error) {
       console.error('Error saving project:', error)
-      showNotification('error', 'Failed to save project')
+      const errorMessage = error?.message || error?.details || 'Unknown error occurred'
+      showNotification('error', `Failed to save project: ${errorMessage}`)
     }
   }
 
   const handleServiceSubmit = async (e) => {
     e.preventDefault()
-    try {
-      if (editingService) {
-        const { error } = await supabase
-          .from('services')
-          .update(serviceForm)
-          .eq('id', editingService.id)
+    
+    // Validate required fields
+    if (!serviceForm.title || !serviceForm.description) {
+      showNotification('error', 'Please fill in all required fields (Title, Description)')
+      return
+    }
 
-        if (error) throw error
+    try {
+      // Prepare data - convert empty strings to null for optional fields
+      const serviceData = {
+        title: serviceForm.title.trim(),
+        description: serviceForm.description.trim(),
+        icon: serviceForm.icon?.trim() || null,
+      }
+
+      if (editingService) {
+        const { data, error } = await supabase
+          .from('services')
+          .update(serviceData)
+          .eq('id', editingService.id)
+          .select()
+
+        if (error) {
+          console.error('Update error:', error)
+          showNotification('error', `Failed to update service: ${error.message || error.details || 'Unknown error'}`)
+          return
+        }
         showNotification('success', 'Service updated successfully')
       } else {
-        const { error } = await supabase.from('services').insert([serviceForm])
-        if (error) throw error
+        const { data, error } = await supabase
+          .from('services')
+          .insert([serviceData])
+          .select()
+
+        if (error) {
+          console.error('Insert error:', error)
+          showNotification('error', `Failed to create service: ${error.message || error.details || 'Unknown error'}`)
+          return
+        }
         showNotification('success', 'Service created successfully')
       }
 
@@ -263,7 +323,8 @@ export default function AdminDashboard() {
       fetchData()
     } catch (error) {
       console.error('Error saving service:', error)
-      showNotification('error', 'Failed to save service')
+      const errorMessage = error?.message || error?.details || 'Unknown error occurred'
+      showNotification('error', `Failed to save service: ${errorMessage}`)
     }
   }
 
