@@ -4,33 +4,60 @@
 
 @layer base {
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-white text-gray-900 font-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-gold-600 hover:bg-gold-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
+    @apply bg-black hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded transition-colors;
   }
   
   .btn-secondary {
-    @apply bg-black hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl;
-  }
-  
-  .btn-outline {
-    @apply border-2 border-gold-600 text-gold-600 hover:bg-gold-600 hover:text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300;
+    @apply bg-white hover:bg-gray-100 text-black border border-gray-300 font-semibold py-2 px-4 rounded transition-colors;
   }
   
   .card {
-    @apply bg-white rounded-lg shadow-lg p-6 transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
-  }
-  
-  .section-padding {
-    @apply py-16 md:py-24;
+    @apply bg-white rounded border border-gray-200 p-6 transition-shadow hover:shadow-md;
   }
   
   .container-custom {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* News-style typography */
+  .article-content {
+    @apply text-lg leading-relaxed;
+  }
+  
+  .article-content p {
+    @apply mb-4;
+  }
+  
+  .article-content h2 {
+    @apply text-2xl font-bold mt-8 mb-4;
+  }
+  
+  .article-content h3 {
+    @apply text-xl font-bold mt-6 mb-3;
+  }
+  
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
@@ -49,11 +76,10 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d97706;
+  background: #888;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b45309;
+  background: #555;
 }
-

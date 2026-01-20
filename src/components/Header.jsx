@@ -7,52 +7,54 @@ export default function Header() {
 
   const isActive = (path) => location.pathname === path
 
-  const navLinks = [
+  const mainSections = [
     { path: '/', label: 'Home' },
-    { path: '/about', label: 'About' },
-    { path: '/services', label: 'Services' },
-    { path: '/projects', label: 'Projects' },
-    { path: '/contact', label: 'Contact' },
+    { path: '/section/us', label: 'U.S.' },
+    { path: '/section/world', label: 'World' },
+    { path: '/section/business', label: 'Business' },
+    { path: '/section/arts', label: 'Arts' },
+    { path: '/section/lifestyle', label: 'Lifestyle' },
+    { path: '/section/opinion', label: 'Opinion' },
   ]
 
   return (
-    <header className="bg-black text-white sticky top-0 z-50 shadow-lg">
-      <nav className="container-custom">
-        <div className="flex items-center justify-between h-20">
+    <header className="bg-white border-b border-gray-300 sticky top-0 z-50">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Top Bar */}
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="text-2xl font-bold">
-              <span className="text-gold-500">BUILD</span>
-              <span className="text-white">PRO</span>
+          <Link to="/" className="flex items-center">
+            <div className="text-3xl font-bold text-black">
+              The Times
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
+          <div className="hidden lg:flex items-center space-x-1">
+            {mainSections.map((section) => (
               <Link
-                key={link.path}
-                to={link.path}
-                className={`transition-colors duration-300 ${
-                  isActive(link.path)
-                    ? 'text-gold-500 border-b-2 border-gold-500'
-                    : 'hover:text-gold-500'
+                key={section.path}
+                to={section.path}
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  isActive(section.path)
+                    ? 'text-black border-b-2 border-black'
+                    : 'text-gray-700 hover:text-black'
                 }`}
               >
-                {link.label}
+                {section.label}
               </Link>
             ))}
             <Link
-              to="/contact"
-              className="btn-primary text-sm py-2 px-4"
+              to="/admin/login"
+              className="ml-4 px-4 py-2 text-sm font-medium text-gray-700 hover:text-black"
             >
-              Get Quote
+              Admin
             </Link>
           </div>
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-white focus:outline-none"
+            className="lg:hidden text-gray-700 focus:outline-none"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -83,25 +85,25 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-800">
-            {navLinks.map((link) => (
+          <div className="lg:hidden py-4 border-t border-gray-200">
+            {mainSections.map((section) => (
               <Link
-                key={link.path}
-                to={link.path}
+                key={section.path}
+                to={section.path}
                 onClick={() => setIsMenuOpen(false)}
-                className={`block py-2 transition-colors duration-300 ${
-                  isActive(link.path) ? 'text-gold-500' : 'hover:text-gold-500'
+                className={`block py-2 text-sm font-medium ${
+                  isActive(section.path) ? 'text-black font-bold' : 'text-gray-700'
                 }`}
               >
-                {link.label}
+                {section.label}
               </Link>
             ))}
             <Link
-              to="/contact"
+              to="/admin/login"
               onClick={() => setIsMenuOpen(false)}
-              className="btn-primary text-sm py-2 px-4 mt-4 inline-block"
+              className="block py-2 text-sm font-medium text-gray-700"
             >
-              Get Quote
+              Admin
             </Link>
           </div>
         )}
@@ -109,4 +111,3 @@ export default function Header() {
     </header>
   )
 }
-

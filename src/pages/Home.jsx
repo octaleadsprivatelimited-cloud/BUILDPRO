@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../config/supabase'
 
 export default function Home() {
-  const [projects, setProjects] = useState([])
-  const [services, setServices] = useState([])
+  const [featuredArticles, setFeaturedArticles] = useState([])
+  const [latestArticles, setLatestArticles] = useState([])
+  const [categoryArticles, setCategoryArticles] = useState({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -13,221 +14,215 @@ export default function Home() {
 
   const fetchData = async () => {
     try {
-      // Fetch recent projects (limit to 6)
-      const { data: projectsData } = await supabase
-        .from('projects')
+      // Fetch featured articles
+      const { data: featured } = await supabase
+        .from('articles')
         .select('*')
-        .order('created_at', { ascending: false })
-        .limit(6)
+        .eq('published', true)
+        .eq('featured', true)
+        .order('published_at', { ascending: false })
+        .limit(3)
 
-      // Fetch services
-      const { data: servicesData } = await supabase
-        .from('services')
+      // Fetch latest articles
+      const { data: latest } = await supabase
+        .from('articles')
         .select('*')
-        .order('created_at', { ascending: true })
+        .eq('published', true)
+        .order('published_at', { ascending: false })
+        .limit(12)
 
-      setProjects(projectsData || [])
-      setServices(servicesData || [])
+      // Fetch articles by category
+      const categories = ['us', 'world', 'business', 'arts', 'lifestyle', 'opinion']
+      const categoryData = {}
+      
+      for (const category of categories) {
+        const { data } = await supabase
+          .from('articles')
+          .select('*')
+          .eq('published', true)
+          .eq('category', category)
+          .order('published_at', { ascending: false })
+          .limit(4)
+        categoryData[category] = data || []
+      }
+
+      setFeaturedArticles(featured || [])
+      setLatestArticles(latest || [])
+      setCategoryArticles(categoryData)
     } catch (error) {
-      console.error('Error fetching data:', error)
+      console.error('Error fetching articles:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const highlights = [
-    {
-      title: 'Residential Construction',
-      description: 'Custom homes built to perfection',
-      icon: '🏠',
-    },
-    {
-      title: 'Commercial Projects',
-      description: 'Office buildings and retail spaces',
-      icon: '🏢',
-    },
-    {
-      title: 'Renovation & Remodeling',
-      description: 'Transform your existing space',
-      icon: '🔨',
-    },
-    {
-      title: 'Project Management',
-      description: 'End-to-end project oversight',
-      icon: '📋',
-    },
-  ]
+  const formatDate = (dateString) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { 
+      month: 'long', 
+      day: 'numeric', 
+      year: 'numeric' 
+    })
+  }
 
-  const testimonials = [
-    {
-      name: 'John Smith',
-      role: 'Homeowner',
-      text: 'BuildPro delivered beyond our expectations. Professional, timely, and quality workmanship.',
-      rating: 5,
-    },
-    {
-      name: 'Sarah Johnson',
-      role: 'Business Owner',
-      text: 'Our commercial project was completed on time and within budget. Highly recommended!',
-      rating: 5,
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Property Developer',
-      text: 'The team at BuildPro is knowledgeable and reliable. They made our renovation seamless.',
-      rating: 5,
-    },
-  ]
+  const getCategoryLabel = (category) => {
+    const labels = {
+      us: 'U.S.',
+      world: 'World',
+      business: 'Business',
+      arts: 'Arts',
+      lifestyle: 'Lifestyle',
+      opinion: 'Opinion',
+      tech: 'Tech',
+      sports: 'Sports'
+    }
+    return labels[category] || category
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      {/* Hero Section */}
-      <section className="relative h-screen flex items-center justify-center bg-gradient-to-r from-black to-gray-900 text-white">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920')] bg-cover bg-center opacity-30"></div>
-        <div className="relative z-10 text-center container-custom">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            Building Trust.
-            <br />
-            <span className="text-gold-500">Delivering Excellence.</span>
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 text-gray-300">
-            Your premier construction partner for residential and commercial projects
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/contact" className="btn-primary">
-              Get Free Quote
-            </Link>
-            <a
-              href="https://wa.me/1234567890?text=Hello!%20I%20would%20like%20to%20get%20a%20quote."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary"
-            >
-              WhatsApp Contact
-            </a>
-          </div>
-        </div>
-      </section>
+    <div className="bg-white">
+      {/* Featured Section */}
+      {featuredArticles.length > 0 && (
+        <section className="border-b border-gray-300">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Featured */}
+              {featuredArticles[0] && (
+                <div className="lg:col-span-2">
+                  <Link to={`/article/${featuredArticles[0].slug}`}>
+                    {featuredArticles[0].featured_image_url && (
+                      <img
+                        src={featuredArticles[0].featured_image_url}
+                        alt={featuredArticles[0].title}
+                        className="w-full h-96 object-cover mb-4"
+                      />
+                    )}
+                    <h1 className="text-4xl font-bold mb-3 hover:underline">
+                      {featuredArticles[0].title}
+                    </h1>
+                    <p className="text-lg text-gray-700 mb-2">
+                      {featuredArticles[0].excerpt}
+                    </p>
+                    <div className="text-sm text-gray-500">
+                      By {featuredArticles[0].author} • {formatDate(featuredArticles[0].published_at)}
+                    </div>
+                  </Link>
+                </div>
+              )}
 
-      {/* Highlights Section */}
-      <section className="section-padding bg-white">
-        <div className="container-custom">
-          <h2 className="text-4xl font-bold text-center mb-12">
-            What We <span className="text-gold-600">Offer</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {highlights.map((item, index) => (
-              <div key={index} className="card text-center">
-                <div className="text-5xl mb-4">{item.icon}</div>
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.description}</p>
+              {/* Side Featured */}
+              <div className="space-y-6">
+                {featuredArticles.slice(1, 3).map((article) => (
+                  <Link key={article.id} to={`/article/${article.slug}`}>
+                    <div className="border-b border-gray-200 pb-4">
+                      <h3 className="text-xl font-bold mb-2 hover:underline">
+                        {article.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {article.excerpt}
+                      </p>
+                      <div className="text-xs text-gray-500">
+                        {formatDate(article.published_at)}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us Section */}
-      <section className="section-padding bg-gray-100">
-        <div className="container-custom">
-          <h2 className="text-4xl font-bold text-center mb-12">
-            Why Choose <span className="text-gold-600">Us</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-6xl font-bold text-gold-600 mb-2">15+</div>
-              <h3 className="text-xl font-semibold mb-2">Years of Experience</h3>
-              <p className="text-gray-600">
-                Over a decade of delivering exceptional construction projects
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-6xl font-bold text-gold-600 mb-2">500+</div>
-              <h3 className="text-xl font-semibold mb-2">Projects Completed</h3>
-              <p className="text-gray-600">
-                Successfully delivered projects across residential and commercial sectors
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-6xl font-bold text-gold-600 mb-2">1000+</div>
-              <h3 className="text-xl font-semibold mb-2">Happy Clients</h3>
-              <p className="text-gray-600">
-                Building lasting relationships with satisfied customers
-              </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* Recent Projects Section */}
-      <section className="section-padding bg-white">
-        <div className="container-custom">
-          <div className="flex justify-between items-center mb-12">
-            <h2 className="text-4xl font-bold">
-              Recent <span className="text-gold-600">Projects</span>
-            </h2>
-            <Link to="/projects" className="text-gold-600 hover:text-gold-700 font-semibold">
-              View All →
+      {/* Latest Articles Grid */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h2 className="text-2xl font-bold mb-6 border-b border-gray-300 pb-2">
+          Latest News
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {latestArticles.map((article) => (
+            <Link key={article.id} to={`/article/${article.slug}`} className="group">
+              <article className="h-full flex flex-col">
+                {article.featured_image_url && (
+                  <img
+                    src={article.featured_image_url}
+                    alt={article.title}
+                    className="w-full h-48 object-cover mb-3 group-hover:opacity-90 transition-opacity"
+                  />
+                )}
+                <div className="flex-1">
+                  <span className="text-xs font-semibold text-gray-600 uppercase">
+                    {getCategoryLabel(article.category)}
+                  </span>
+                  <h3 className="text-xl font-bold mt-1 mb-2 group-hover:underline">
+                    {article.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                    {article.excerpt}
+                  </p>
+                  <div className="text-xs text-gray-500">
+                    By {article.author} • {formatDate(article.published_at)}
+                  </div>
+                </div>
+              </article>
             </Link>
-          </div>
-          {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="card animate-pulse">
-                  <div className="h-48 bg-gray-300 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-300 rounded w-1/2"></div>
-                </div>
-              ))}
-            </div>
-          ) : projects.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {projects.map((project) => (
-                <div key={project.id} className="card overflow-hidden">
-                  {project.image_url && (
-                    <img
-                      src={project.image_url}
-                      alt={project.title}
-                      className="w-full h-48 object-cover mb-4 rounded"
-                    />
-                  )}
-                  <h3 className="text-xl font-semibold mb-2">{project.title}</h3>
-                  <p className="text-gray-600 mb-2">{project.location}</p>
-                  <p className="text-sm text-gold-600">{project.type}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-600">No projects available yet.</p>
-          )}
+          ))}
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="section-padding bg-gray-100">
-        <div className="container-custom">
-          <h2 className="text-4xl font-bold text-center mb-12">
-            Client <span className="text-gold-600">Testimonials</span>
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="card">
-                <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <span key={i} className="text-gold-500 text-xl">★</span>
-                  ))}
-                </div>
-                <p className="text-gray-700 mb-4 italic">"{testimonial.text}"</p>
-                <div>
-                  <p className="font-semibold">{testimonial.name}</p>
-                  <p className="text-sm text-gray-600">{testimonial.role}</p>
-                </div>
+      {/* Category Sections */}
+      {Object.entries(categoryArticles).map(([category, articles]) => {
+        if (articles.length === 0) return null
+        return (
+          <section key={category} className="border-t border-gray-300 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">
+                  {getCategoryLabel(category)}
+                </h2>
+                <Link
+                  to={`/section/${category}`}
+                  className="text-sm font-semibold text-gray-700 hover:underline"
+                >
+                  More →
+                </Link>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {articles.map((article) => (
+                  <Link key={article.id} to={`/article/${article.slug}`} className="group">
+                    <article>
+                      {article.featured_image_url && (
+                        <img
+                          src={article.featured_image_url}
+                          alt={article.title}
+                          className="w-full h-40 object-cover mb-3 group-hover:opacity-90 transition-opacity"
+                        />
+                      )}
+                      <h3 className="text-lg font-bold mb-2 group-hover:underline">
+                        {article.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                        {article.excerpt}
+                      </p>
+                      <div className="text-xs text-gray-500">
+                        {formatDate(article.published_at)}
+                      </div>
+                    </article>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }
-
